@@ -22,7 +22,7 @@
 const q = d3.queue();
 
 
-q.defer(d3.json, 'geojsons/combined10.json');
+q.defer(d3.json, 'combined10.json');
 
 q.await((err, data) => {
 
