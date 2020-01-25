@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+    .container {
+        width: 800px;
+        height: 800px;
+    }
+
+
+</style>
+<body>
+
+    <div class="container"></div>
+
+<!-- load the d3.js library -->    
+<script src="https://unpkg.com/topojson@3"></script>
+<script src="d3.js"></script>
+
+<script>
+
+    
+const q = d3.queue();
+
+
+q.defer(d3.json, 'geojsons/combined10.json');
+
+q.await((err, data) => {
+
+    if (err) {
+        console.log(err);
+    }
+  
+    console.log(data);
+   
+    const width = 500;
+    const height = 500;
+
+    const svg = d3.select('.container')
+                    .append('svg')
+                    .attr('viewBox', `0 0 ${width} ${height}`);
+                    // .call(d3.zoom().scaleExtent([.5, 5]).on("zoom", function () {
+                    //            svg.attr("transform", d3.event.transform)
+                    //         }));
+
+    const projection = d3.geoMercator().fitSize([width, height], topojson.feature(data, data.objects.counties));
+
+    // Data variables
+    const countiesData = topojson.feature(data, data.objects.counties).features;
+    const provincesData = topojson.feature(data, data.objects.provinces).features;
+    const constitsData = topojson.feature(data, data.objects.constits).features;
+    const localElectData = topojson.feature(data, data.objects.localElect_32).features;
+    const adminData = topojson.feature(data, data.objects.admin_32).features;
+    const wardsData = topojson.feature(data, data.objects.wards).features;
+
+
+
+    const path = d3.geoPath()
+                    .projection(projection);
+
+    const renderMap = (dataset, datasetWater) => {
+
+        d3.select('g.body').transition().duration(2000).style('opacity', 0).remove();
+
+        const body = svg.append('g').attr('class', 'body');
+
+        const boundaries = body.selectAll('path.boundary')
+                            .data(dataset);
+
+        //boundaries.exit().transition().duration(2000).remove();
+        // water.exit().transition().duration(3000).remove();
+
+        boundaries.enter()
+            .append('path')
+            .merge(boundaries)
+            .attr('class', 'boundary')
+            .on('mouseover', function(d, i) { console.log(d) })
+            .style('fill', (d, i) => d.properties.fclass === 'water' ? '#cbeaee' : '#004200')
+            .style('fill-opacity', (d, i) => d.properties.fclass === 'water' ? 1 : .5)
+            .style('pointer-events', (d, i) => d.properties.fclass === 'water' ? 'none' : 'auto')
+            .style('stroke', (d, i) => d.properties.fclass === 'water' ? 'none' : 'white')
+            // .style('stroke-dasharray', (d, i) => d.properties.fclass === 'water' ? 'none' : '1, 1')
+            .style('stroke-width', (d, i) => d.properties.fclass === 'water' ? 0 : 0.5)
+            .style('stroke-opacity', (d, i) => d.properties.fclass === 'water' ? 0 : 0.2)
+            .style('opacity', 0)
+            .attr('d', path)
+            .transition()
+            .duration(2000)
+            .style('opacity', 1);
+
+    }
+
+
+    renderMap(countiesData);
+
+    setTimeout(() => { 
+        renderMap(provincesData);
+    }, 3000);
+
+    setTimeout(() => { 
+        renderMap(constitsData);
+    }, 6000);
+
+    setTimeout(() => { 
+        renderMap(localElectData);
+    }, 9000);
+
+    setTimeout(() => { 
+        renderMap(adminData);
+    }, 12000);
+
+    setTimeout(() => { 
+        renderMap(wardsData);
+    }, 15000);
+
+    
+
+    
+});
+
+
+
+
+
+</script>
+</body>
+
+
+
+
+
+
+ 
